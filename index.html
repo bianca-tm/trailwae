@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Trails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .trail {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .trail h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .trail p {
+            margin: 5px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Find Nearby Trails</h1>
+    <form id="trailForm">
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" required>
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" required>
+        <label for="radius">Radius (km):</label>
+        <input type="text" id="radius" name="radius" value="10">
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('trailForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+            const radius = document.getElementById('radius').value;
+
+            fetch(`/trails?lat=${latitude}&lon=${longitude}&radius=${radius}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(trail => {
+                            const trailDiv = document.createElement('div');
+                            trailDiv.className = 'trail';
+                            trailDiv.innerHTML = `
+                                <h2>${trail.tags.name || 'Unnamed Trail'}</h2>
+                                <p>ID: ${trail.id}</p>
+                                <p>Tags: ${JSON.stringify(trail.tags)}</p>
+                            `;
+                            resultsDiv.appendChild(trailDiv);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<p>No trails found</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '<p>Error fetching trails data</p>';
+                });
+        });
+    </script>
+</body>
+</html>
